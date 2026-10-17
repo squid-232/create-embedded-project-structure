@@ -1,18 +1,20 @@
 ---
 name: create-embedded-project-structure
-description: "为嵌入式项目（MCU + RTOS、嵌入式 Linux）设计标准化的项目结构、工程结构和研发工作流。可以：(1) 根据项目信息生成定制化目录树和说明；(2) 用脚本生成可直接使用的项目骨架 zip：分层模板代码、CMake 或 Buildroot / Yocto 配置、debug / release / factory 构建脚本、主机端单元测试、cppcheck 和 clang-format 检查脚本、GitLab 或 GitHub CI、开发协作规范以及需求和测试报告模板；(3) 在 Notion 中生成项目结构规范页面；(4) 输出研发工作流规范：项目阶段与交付物、EVT / DVT / PVT、日常开发闭环、分支与提交规范、发布流程。用户提到嵌入式、单片机、STM32 / ESP32 / GD32、FreeRTOS / RT-Thread、嵌入式 Linux、RK / 全志 / NXP iMX6 / iMX8、Buildroot / Yocto 项目的目录结构、工程结构、项目模板、项目骨架、代码分层、新建工程、工程规范化、研发流程、开发规范、CI、代码检查、单元测试、版本发布或项目规范文档时使用。"
+description: "为嵌入式项目（MCU + RTOS、嵌入式 Linux）设计标准化的项目结构、工程结构和研发工作流，并根据芯片、RTOS、构建工具和已有文件自动判断项目类型。可以：(1) 根据项目信息生成定制化目录树和说明；(2) 用脚本生成可直接使用的项目骨架 zip：分层模板代码、CMake 或 Buildroot / Yocto 配置、debug / release / factory 构建脚本、主机端单元测试、cppcheck 和 clang-format 检查脚本、GitLab 或 GitHub CI、开发协作规范以及需求和测试报告模板；(3) 在 Notion 中生成项目结构规范页面；(4) 输出研发工作流规范：项目阶段与交付物、EVT / DVT / PVT、日常开发闭环、分支与提交规范、发布流程；(5) 把用户已有的资料（需求和设计文档、器件手册、原理图、PCB、BOM、Gerber、3D 模型和结构件、源码、CubeMX / Keil / IAR 工程、设备树、defconfig、固件和镜像）逐个归类到标准目录，输出迁移映射表。用户提到嵌入式、单片机、STM32 / ESP32 / GD32、FreeRTOS / RT-Thread、嵌入式 Linux、RK / 全志 / NXP iMX6 / iMX8、Buildroot / Yocto 项目的目录结构、工程结构、项目模板、项目骨架、代码分层、新建工程、工程规范化、研发流程、开发规范、CI、代码检查、单元测试、版本发布、资料整理、文件归类、已有工程迁移或项目规范文档时使用。"
+metadata:
+  version: "2.0.0"
 ---
 
-
-为嵌入式项目生成标准化的项目结构、工程结构和研发工作流。支持两种项目类型：**MCU + RTOS**、**嵌入式 Linux**；支持四种输出：定制化目录树 + 说明、项目骨架 zip、Notion 规范页面、研发工作流规范。
+为嵌入式项目生成标准化的项目结构、工程结构和研发工作流。支持两种项目类型：**MCU + RTOS**、**嵌入式 Linux**；支持五种输出：定制化目录树 + 说明、项目骨架 zip、Notion 规范页面、研发工作流规范、已有资料归档。
 ## 参考子页面（按需读取）
 - [MCU + RTOS 结构参考](references/mcu-rtos.md)：项目类型为 MCU / 单片机 / RTOS 时必读。
 - [嵌入式 Linux 结构参考](references/embedded-linux.md)：项目类型为 Linux / SoC / BSP 时必读。
 - [研发工作流参考](references/development-workflow.md)：输出研发工作流规范，回答研发流程、开发规范、CI、代码检查、EVT / DVT / PVT 相关问题，或 Notion 页面需要“研发流程与交付物”章节时读取。
 - [Notion 规范页面模板](references/notion-page-template.md)：输出 Notion 页面时读取。
+- [项目类型判断与资料归档规则](references/project-classification-and-archiving.md)：每次收集输入时读取，用于判断项目类型和输出方式；用户提供了现有文件、压缩包或已有工程时，按其中的规则归档资料（输出 E）。
 参考资料已随本技能安装在 `references/`，按需读取对应的本地文件。
 ## 1. 收集输入
-缺少的必要信息用当前环境可用的提问工具或直接向用户一次问完；有默认值的不要追问，直接使用并在最终回复里说明。
+先按下方规则自动判断项目类型和输出方式，能判断出来的不要再问；仍缺少的信息使用当前环境可用的提问工具或直接向用户一次问完；有默认值的不要追问，直接使用并在最终回复里说明。
 <table header-row="true">
 <tr>
 <td>输入</td>
@@ -31,12 +33,12 @@ description: "为嵌入式项目（MCU + RTOS、嵌入式 Linux）设计标准�
 </tr>
 <tr>
 <td>项目类型</td>
-<td>`mcu-rtos` / `linux`</td>
-<td>必填（例程模式默认 `mcu-rtos`）</td>
+<td>`mcu-rtos` / `linux`，按下方“自动判断项目类型”得出</td>
+<td>自动判断；判断不了再问（例程模式默认 `mcu-rtos`）</td>
 </tr>
 <tr>
 <td>输出方式</td>
-<td>目录树说明 / zip / Notion 页面 / 研发工作流规范，可多选</td>
+<td>目录树说明 / zip / Notion 页面 / 研发工作流规范 / 资料归档，可多选，按用户说法自动判断</td>
 <td>目录树说明</td>
 </tr>
 <tr>
@@ -81,6 +83,16 @@ description: "为嵌入式项目（MCU + RTOS、嵌入式 Linux）设计标准�
 </tr>
 </table>
 **例程模式**：用户说“没有项目”“仅作例程 / 模板 / 示例”时，不要追问项目信息，直接使用默认值：没指定类型时用 `mcu-rtos`；项目名 `McuRtosTemplate`（mcu-rtos）或 `LinuxBspTemplate`（linux）；不加 Bootloader 和驱动；其余参数取上表默认值。回复里列出这些默认值，说明换成真实项目时用户需要提供哪些信息，并告诉用户也可以生成另一种类型的例程。
+**自动判断项目类型**（详细条件见“项目类型判断与资料归档规则”子页面第 1 节）：
+1. 用户明确指定了类型 → 直接采用；与芯片等信号冲突时向用户确认一次。
+2. 用户提供了现有资料 → 先扫描文件，文件里的信号（工程文件、启动文件、链接脚本、设备树、defconfig）优先于文字描述。
+3. 按强信号判断：
+	- `mcu-rtos`：STM32（STM32MP 除外）、GD32、AT32、CH32、ESP32 全系列、nRF5x、i.MX RT、LPC、MSP430、RP2040 等 MCU；FreeRTOS、RT-Thread、Zephyr、ThreadX、uC/OS、裸机；Keil / IAR / CubeMX 工程、`startup_*.s`、含 FLASH / RAM 分区的 `*.ld`、`FreeRTOSConfig.h`。
+	- `linux`：RK35xx / RV11xx、全志、i.MX 6 / 8 / 9、STM32MP、AM335x / AM62x 等应用处理器；Buildroot、Yocto、PetaLinux、OpenWrt、U-Boot、内核、设备树、rootfs；`*.dts`、`*_defconfig`、`*.bb`、`*.ko`。
+4. 两类强信号都有：两颗芯片 → 多固件（见特殊情况）；同一颗异构 SoC（STM32MP1、i.MX 8M）→ `linux` 为主，用户提到 M 核固件时再加 `03_Firmware/mcu/`。
+5. 只有弱信号（网关、物联网、Wi-Fi、BLE、MQTT、OTA、LVGL、CMake、C 语言）或没有信号：例程模式默认 `mcu-rtos`，否则向用户问一次。只有文档和硬件资料（原理图、PCB、3D、BOM 等）且只要求归档时，不判断类型也不提问，因为 `01_Docs/`、`02_Hardware/` 在两种类型中结构相同。
+6. 最终回复第一行写明结论和依据，如“项目类型：mcu-rtos（依据：STM32F407、FreeRTOS）”。
+**自动判断输出方式**：目录结构、怎么分层 → A；zip、骨架、模板、直接能用 → B；Notion、写成页面 → C；研发流程、开发规范、CI、EVT / DVT / PVT → D；上传了文件或压缩包、给出文件清单、整理、归类、“这些资料放哪”、已有工程迁移 → E。都没命中时为 A，例程模式为 A + B。
 ## 2. 核心规则（所有输出都必须遵守）
 - 顶层固定为 `01_Docs/ 02_Hardware/ 03_Firmware/ 04_Tools/ 05_Release/ README.md .gitignore`，编号前缀保持顺序；研发工作流文件 `CONTRIBUTING.md`、CI 配置（`.gitlab-ci.yml` + `.gitlab/` MR 模板；GitHub 为 `.github/`）、`.editorconfig` 也放在根目录。
 - 分层调用只能自上而下：`app → middleware → drivers → bsp → hal/cmsis`。下层通知上层只用回调，禁止 include 上层头文件。
@@ -222,16 +234,24 @@ zip -rqD <Name>.zip <Name> -x '*/03_Firmware/build/*' '*/03_Firmware/output/host
 2. 按用户项目裁剪，以下两项完整给出：项目阶段与交付物（标出项目当前所处阶段；例程模式标为“从阶段 1 开始”）、硬件阶段与固件就绪（EVT / DVT / PVT / MP）。
 3. 日常开发闭环、分支与提交规范、构建变体、CI 流水线、发布流程：同时生成了 zip 时，这些已经写在骨架的 `CONTRIBUTING.md` 和 CI 文件里，只给出文件位置和关键命令，不要重复贴全文；没有 zip 时按参考子页面完整给出，命令换成本项目的。
 4. 同时生成 Notion 页面时，把以上内容写成页面的“研发流程与交付物”章节，回复里只给出页面位置。
+### E. 资料归档（已有文件 → 标准目录）
+1. 读取“项目类型判断与资料归档规则”子页面第 3 节。
+2. 获取文件清单：本地文件先用 `rg --files` 或文件系统工具列出路径；附件下载到工作目录，压缩包先检查路径安全性再解压；Notion 附件通过当前 MCP 返回的下载地址获取；用户只给清单时按清单判断。文件超过 200 个时先整目录归类，映射表只列目录。
+3. 逐个文件按顺序匹配：不入库 → 整目录 → 文件名和扩展名 → 内容 → 待确认。扩展名不足以判断时（PDF、Word、Excel、`.c` / `.h`、`.bin`、图片）必须读取内容（`pdftotext`、`markitdown`、openpyxl、`rg`），不要只凭文件名猜。
+4. 输出映射表（原路径 → 目标路径 → 依据 → 备注）、待确认、不入库清单；待确认项使用当前环境可用的提问工具或直接向用户一次问完；50 MB 以上的文件在备注中标注 Git LFS。
+5. 用户要求实际整理时：用脚本生成骨架，把文件复制（不移动、不删除原文件）到目标位置，再按 B.4 验证、B.5 打包、B.6 交付。厂商代码整目录放入、保持原结构；需要拆分的代码只在备注中给建议，不擅自修改。
+6. 同时生成 Notion 页面时，把映射表写成页面的“现有资料归档”章节。
 ## 4. 最终回复格式
-按输出方式依次分节，用户没选的输出不写：
+第一行写明项目类型和判断依据；仅归档文档和硬件资料时写明“无需判断项目类型”；然后按输出方式依次分节，用户没选的输出不写：
 1. **标准目录结构**：目录树代码块、分层调用、本项目定制点、命名与 Git 简表。
 2. **项目骨架 zip**：zip 文件块、包含的内容、验证结果（`run_tests.sh` 和 `check.sh` 是否通过、zip 文件数）、下一步。已经输出第 1 节目录树时不再附树，只列出目录树之外的关键文件；没有第 1 节时附两层目录树（根目录 + 一级子目录）。
 3. **Notion 页面**：页面链接、所在位置、包含的章节。
 4. **研发工作流**：按 D 的第 2–4 步输出。
+5. **资料归档**：统计、映射表、待确认、不入库清单、后续建议（格式见子页面 3.13）。
 最后用一个简短列表说明用了哪些默认值，以及换成真实项目时用户需要提供哪些信息（如项目名、芯片或 SoC、构建方式、外部器件、功能特性）。
 ## 5. 特殊情况
 - **MCU 裸机**：按 mcu-rtos 生成，然后删除 `os/`，把 `app_tasks.c` 改成超级循环（`while(1)` + 定时器、状态机），并删掉 `app_config.h` 里的任务栈和优先级配置。
 - **多固件（Bootloader + App、主从 MCU、Linux + MCU 协处理器）**：在 `03_Firmware/` 下按固件并列放置（如 `03_Firmware/boot/`、`03_Firmware/app/`，或 `03_Firmware/linux/`、`03_Firmware/mcu/`），共享代码放 `03_Firmware/common/`。可以分别运行脚本再手动合并，合并后同步修改 CI 和 `CONTRIBUTING.md` 中的路径。
 - **Keil / IAR**：没有 `build.sh`，在 IDE 中建 Debug / Release / Factory 三个 Target；CI 的固件构建需要装了 IDE 的 Windows runner（CI 文件里有注释模板）；归档用 `scripts/pack.sh release <IDE 输出目录>`。
-- **已有工程要规范化**：先列出现有结构，输出“旧路径 → 新路径”的迁移映射表和迁移步骤，不要直接删除用户文件。
+- **已有工程要规范化**：按 E 执行（CubeMX 工程直接用子页面 3.11 的对照表），输出“旧路径 → 新路径”的迁移映射表和迁移步骤，不要直接删除用户文件。
 - **用户已有团队规范或 CI**：用户的规范优先，本 skill 的规则只补充未覆盖的部分；生成骨架时用 `--minimal` 或 `--ci none`，避免和现有流程冲突。

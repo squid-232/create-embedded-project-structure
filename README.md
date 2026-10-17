@@ -15,6 +15,27 @@ A reusable Codex skill and standalone Python generator for **MCU + RTOS** and **
 
 Templates need vendor sources, board configuration, and project-specific implementation before hardware use. Linux source-fetch and whole-image build scripts require BSP-specific completion.
 
+## What's new in skill v2
+
+The skill package is now **2.0.0**. The bundled Python skeleton generator remains **v2.0**, unchanged from the previous package. These additions are agent instructions and reference rules, not a new Python classification command.
+
+- **Project-type inference:** inspect chip, RTOS and project-file evidence to distinguish MCU, Linux, heterogeneous SoCs and multiple firmware targets.
+- **Output routing:** add existing-material archiving alongside directory trees, skeleton ZIPs, Notion specifications and development workflows.
+- **Migration mapping:** classify documents, hardware, sources, tools and releases with source path, destination, evidence and notes; preserve vendor SDK directory structures.
+- **Hardware and 3D routing:** schematics to `02_Hardware/Schematic/`; whole-board models to `PCB/3D/`; component models to `PCB/Library/3D/`; enclosures and complete assemblies to `Mechanical/`; print models to `Mechanical/print/`. All hardware paths are under `02_Hardware/`.
+- **Content-based evidence:** inspect STEP headers and product names, and distinguish model `.obj` files from build outputs and assembly-source `.asm` files from CAD assemblies.
+- **Copy and storage rules:** provide a mapping first; copy only when actual organization is requested, preserve originals, and leave conflicts unresolved instead of overwriting. Recommend Git LFS above 50 MB and external storage with a link and SHA-256 above 500 MB or when LFS is unavailable. Document-only and hardware-only archiving does not require a project-type decision.
+
+Uncertain files remain in a clarification list. The standalone generator still generates skeletons; it does not automatically sort existing files.
+
+```text
+$create-embedded-project-structure
+Inspect the schematics, PCB files, STEP models, manuals and example projects
+in this folder. Return a classification map and unresolved items first.
+```
+
+To perform the copies, explicitly request organization into a destination folder while preserving the originals.
+
 ## Requirements
 
 - **Python 3.12+**; the generator uses only the standard library.
