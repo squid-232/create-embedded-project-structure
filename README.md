@@ -17,14 +17,14 @@ Templates need vendor sources, board configuration, and project-specific impleme
 
 ## What's new in skill v2
 
-The skill package is now **2.0.0**. The bundled Python skeleton generator remains **v2.0**, unchanged from the previous package. These additions are agent instructions and reference rules, not a new Python classification command.
+The skill package is now **2.0.1**. The bundled Python skeleton generator remains **v2.0**, unchanged from the previous package. These additions are agent instructions and reference rules, not a new Python classification command.
 
 - **Project-type inference:** inspect chip, RTOS and project-file evidence to distinguish MCU, Linux, heterogeneous SoCs and multiple firmware targets.
 - **Output routing:** add existing-material archiving alongside directory trees, skeleton ZIPs, Notion specifications and development workflows.
 - **Migration mapping:** classify documents, hardware, sources, tools and releases with source path, destination, evidence and notes; preserve vendor SDK directory structures.
 - **Hardware and 3D routing:** schematics to `02_Hardware/Schematic/`; whole-board models to `PCB/3D/`; component models to `PCB/Library/3D/`; enclosures and complete assemblies to `Mechanical/`; print models to `Mechanical/print/`. All hardware paths are under `02_Hardware/`.
 - **Content-based evidence:** inspect STEP headers and product names, and distinguish model `.obj` files from build outputs and assembly-source `.asm` files from CAD assemblies.
-- **Copy and storage rules:** provide a mapping first; copy only when actual organization is requested, preserve originals, and leave conflicts unresolved instead of overwriting. Recommend Git LFS above 50 MB and external storage with a link and SHA-256 above 500 MB or when LFS is unavailable. Document-only and hardware-only archiving does not require a project-type decision.
+- **Copy and storage rules:** provide a mapping first; copy by default when initial organization is requested, preserve originals, and leave conflicts unresolved instead of overwriting. Recommend Git LFS above 50 MB and external storage with a link and SHA-256 above 500 MB or when LFS is unavailable. Document-only and hardware-only archiving does not require a project-type decision.
 
 Uncertain files remain in a clarification list. The standalone generator still generates skeletons; it does not automatically sort existing files.
 
@@ -35,6 +35,21 @@ in this folder. Return a classification map and unresolved items first.
 ```
 
 To perform the copies, explicitly request organization into a destination folder while preserving the originals.
+
+## v2.0.1: Chinese names and workspace cleanup
+
+When requested, the agent can rename project material folders and project-owned explanatory documents to Chinese, synchronize links and build/release references, and classify redundant root items into original-material backups, helper tools, and project snapshots. Build conventions, active skill/CI directories, vendor filenames and internal dependencies are preserved.
+
+Initial migration remains copy-only by default. Explicit cleanup of existing redundant items can relocate whole folders without deleting or overwriting them, with file counts and SHA-256 verification. Windows long paths and source/destination manifest updates are covered. Existing ZIP files remain snapshots unless regeneration is requested; regenerated packages exclude old packages and caches.
+
+These workflows are documented in [the localization and cleanup reference](skills/create-embedded-project-structure/references/project-localization-and-cleanup.md). The standalone generator remains v2.0; no automatic rename or cleanup CLI has been added.
+
+```text
+$create-embedded-project-structure
+Rename the project material folders and explanatory documents to Chinese.
+Classify redundant original bundles, helper repositories and old ZIP files,
+update references, and verify that their contents are preserved.
+```
 
 ## Requirements
 

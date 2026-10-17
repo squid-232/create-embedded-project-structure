@@ -2,7 +2,7 @@
 name: create-embedded-project-structure
 description: "为嵌入式项目（MCU + RTOS、嵌入式 Linux）设计标准化的项目结构、工程结构和研发工作流，并根据芯片、RTOS、构建工具和已有文件自动判断项目类型。可以：(1) 根据项目信息生成定制化目录树和说明；(2) 用脚本生成可直接使用的项目骨架 zip：分层模板代码、CMake 或 Buildroot / Yocto 配置、debug / release / factory 构建脚本、主机端单元测试、cppcheck 和 clang-format 检查脚本、GitLab 或 GitHub CI、开发协作规范以及需求和测试报告模板；(3) 在 Notion 中生成项目结构规范页面；(4) 输出研发工作流规范：项目阶段与交付物、EVT / DVT / PVT、日常开发闭环、分支与提交规范、发布流程；(5) 把用户已有的资料（需求和设计文档、器件手册、原理图、PCB、BOM、Gerber、3D 模型和结构件、源码、CubeMX / Keil / IAR 工程、设备树、defconfig、固件和镜像）逐个归类到标准目录，输出迁移映射表。用户提到嵌入式、单片机、STM32 / ESP32 / GD32、FreeRTOS / RT-Thread、嵌入式 Linux、RK / 全志 / NXP iMX6 / iMX8、Buildroot / Yocto 项目的目录结构、工程结构、项目模板、项目骨架、代码分层、新建工程、工程规范化、研发流程、开发规范、CI、代码检查、单元测试、版本发布、资料整理、文件归类、已有工程迁移或项目规范文档时使用。"
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
 ---
 
 为嵌入式项目生成标准化的项目结构、工程结构和研发工作流。支持两种项目类型：**MCU + RTOS**、**嵌入式 Linux**；支持五种输出：定制化目录树 + 说明、项目骨架 zip、Notion 规范页面、研发工作流规范、已有资料归档。
@@ -12,6 +12,7 @@ metadata:
 - [研发工作流参考](references/development-workflow.md)：输出研发工作流规范，回答研发流程、开发规范、CI、代码检查、EVT / DVT / PVT 相关问题，或 Notion 页面需要“研发流程与交付物”章节时读取。
 - [Notion 规范页面模板](references/notion-page-template.md)：输出 Notion 页面时读取。
 - [项目类型判断与资料归档规则](references/project-classification-and-archiving.md)：每次收集输入时读取，用于判断项目类型和输出方式；用户提供了现有文件、压缩包或已有工程时，按其中的规则归档资料（输出 E）。
+- [中文命名与冗余文件整理](references/project-localization-and-cleanup.md)：用户要求中文目录/文件名、改名、整理根目录中的多余文件或归类历史压缩包时读取；涵盖引用同步、原始资料备份与完整性验证。
 参考资料已随本技能安装在 `references/`，按需读取对应的本地文件。
 ## 1. 收集输入
 先按下方规则自动判断项目类型和输出方式，能判断出来的不要再问；仍缺少的信息使用当前环境可用的提问工具或直接向用户一次问完；有默认值的不要追问，直接使用并在最终回复里说明。
@@ -94,7 +95,7 @@ metadata:
 6. 最终回复第一行写明结论和依据，如“项目类型：mcu-rtos（依据：STM32F407、FreeRTOS）”。
 **自动判断输出方式**：目录结构、怎么分层 → A；zip、骨架、模板、直接能用 → B；Notion、写成页面 → C；研发流程、开发规范、CI、EVT / DVT / PVT → D；上传了文件或压缩包、给出文件清单、整理、归类、“这些资料放哪”、已有工程迁移 → E。都没命中时为 A，例程模式为 A + B。
 ## 2. 核心规则（所有输出都必须遵守）
-- 顶层固定为 `01_Docs/ 02_Hardware/ 03_Firmware/ 04_Tools/ 05_Release/ README.md .gitignore`，编号前缀保持顺序；研发工作流文件 `CONTRIBUTING.md`、CI 配置（`.gitlab-ci.yml` + `.gitlab/` MR 模板；GitHub 为 `.github/`）、`.editorconfig` 也放在根目录。
+- 默认顶层为 `01_Docs/ 02_Hardware/ 03_Firmware/ 04_Tools/ 05_Release/ README.md .gitignore`，编号前缀保持顺序；用户要求中文命名时采用“中文命名与冗余文件整理”中的对应名称并同步引用；研发工作流文件 `CONTRIBUTING.md`、CI 配置（`.gitlab-ci.yml` + `.gitlab/` MR 模板；GitHub 为 `.github/`）、`.editorconfig` 也放在根目录。
 - 分层调用只能自上而下：`app → middleware → drivers → bsp → hal/cmsis`。下层通知上层只用回调，禁止 include 上层头文件。
 - 只有 `bsp/` 知道板级细节（引脚、时钟）。换板只改 bsp；换芯片只改 bsp + hal。
 - 厂商代码（`hal/`、`cmsis/`、`os/`）只读。Linux 的 U-Boot / 内核源码不进仓库，只提交 `patches/`、`configs/`、`dts/`。
@@ -235,11 +236,12 @@ zip -rqD <Name>.zip <Name> -x '*/03_Firmware/build/*' '*/03_Firmware/output/host
 3. 日常开发闭环、分支与提交规范、构建变体、CI 流水线、发布流程：同时生成了 zip 时，这些已经写在骨架的 `CONTRIBUTING.md` 和 CI 文件里，只给出文件位置和关键命令，不要重复贴全文；没有 zip 时按参考子页面完整给出，命令换成本项目的。
 4. 同时生成 Notion 页面时，把以上内容写成页面的“研发流程与交付物”章节，回复里只给出页面位置。
 ### E. 资料归档（已有文件 → 标准目录）
+用户要求对已有标准项目改名或归类根目录冗余文件时，按[中文命名与冗余文件整理](references/project-localization-and-cleanup.md)执行；复用现有结构，不重新生成或清空工程。
 1. 读取“项目类型判断与资料归档规则”子页面第 3 节。
 2. 获取文件清单：本地文件先用 `rg --files` 或文件系统工具列出路径；附件下载到工作目录，压缩包先检查路径安全性再解压；Notion 附件通过当前 MCP 返回的下载地址获取；用户只给清单时按清单判断。文件超过 200 个时先整目录归类，映射表只列目录。
 3. 逐个文件按顺序匹配：不入库 → 整目录 → 文件名和扩展名 → 内容 → 待确认。扩展名不足以判断时（PDF、Word、Excel、`.c` / `.h`、`.bin`、图片）必须读取内容（`pdftotext`、`markitdown`、openpyxl、`rg`），不要只凭文件名猜。
 4. 输出映射表（原路径 → 目标路径 → 依据 → 备注）、待确认、不入库清单；待确认项使用当前环境可用的提问工具或直接向用户一次问完；50 MB 以上的文件在备注中标注 Git LFS。
-5. 用户要求实际整理时：用脚本生成骨架，把文件复制（不移动、不删除原文件）到目标位置，再按 B.4 验证、B.5 打包、B.6 交付。厂商代码整目录放入、保持原结构；需要拆分的代码只在备注中给建议，不擅自修改。
+5. 首次实际归档时：在未占用的输出目录用脚本生成骨架，把文件复制（默认不移动、不删除原文件）到目标位置，再按 B.4 验证、B.5 打包、B.6 交付。已有项目的中文命名与冗余文件归类按上述专项参考执行；不要将生成器指向已有项目根目录（其默认写入会删除同名输出目录）。厂商代码整目录放入、保持原结构；需要拆分的代码只在备注中给建议，不擅自修改。
 6. 同时生成 Notion 页面时，把映射表写成页面的“现有资料归档”章节。
 ## 4. 最终回复格式
 第一行写明项目类型和判断依据；仅归档文档和硬件资料时写明“无需判断项目类型”；然后按输出方式依次分节，用户没选的输出不写：
